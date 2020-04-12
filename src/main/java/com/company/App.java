@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 public class App extends Application {
     @Override
     public void start(Stage stage) {
-        stage.setTitle("Jussi Pohjolainen!");
+        stage.setTitle("Max sddssd!");
         stage.show();
     }
     public static void main(String... args) {
