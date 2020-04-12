@@ -1,5 +1,7 @@
-package com.company;
+package com.company.ui;
 
+import com.company.util.FileHandler;
+import com.company.util.JavaCompiler;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -13,7 +15,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -74,8 +76,25 @@ public class App extends Application {
 
         Menu menuEdit = new Menu("Edit");
         Menu menuView = new Menu("View");
-        menuBar.getMenus().addAll(menuFile, menuEdit, menuView);
+        Menu menuRun = new Menu("Run");
+
+        MenuItem compile = new MenuItem(labels.getString("compile"));
+        compile.setOnAction(this::compile);
+
+        menuRun.getItems().add(compile);
+
+        menuBar.getMenus().addAll(menuFile, menuEdit, menuView, menuRun);
         return menuBar;
+    }
+
+    private void compile(ActionEvent actionEvent) {
+        try {
+            JavaCompiler.compile("/Users/pohjus/Desktop/Main.java");
+            JavaCompiler.run("/Users/pohjus/Desktop/Main");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void openFileChooser(ActionEvent event) {
