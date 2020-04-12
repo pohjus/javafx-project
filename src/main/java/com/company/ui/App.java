@@ -4,11 +4,15 @@ import com.company.util.FileHandler;
 import com.company.util.JavaCompiler;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -27,10 +31,12 @@ public class App extends Application {
     private ResourceBundle labels;
 
     private Stage stage;
+    private TextArea terminal;
 
     @Override
     public void start(Stage stage) {
         this.stage = stage;
+
 
         labels = ResourceBundle.getBundle("ui", locale);
 
@@ -40,6 +46,7 @@ public class App extends Application {
         Parent layout = initializeUI();
 
         Scene content = new Scene(layout, 640, 480);
+        content.getStylesheets().add("style.css");
 
         stage.setScene(content);
         stage.show();
@@ -51,8 +58,29 @@ public class App extends Application {
         textArea = new TextArea();
         textArea.setFont(Font.font("Monaco", FontWeight.NORMAL, 14));
 
+        textArea.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                System.out.println(keyEvent.getCode());
+                if(keyEvent.getCode() == KeyCode.TAB) {
+                    int index = textArea.getCaretPosition();
+                    System.out.println(index);
+                    textArea.replaceText(index-1, index, "____");
+                }
+            }
+        });
         layout.setTop(createMenuBar());
         layout.setCenter(textArea);
+
+        this.terminal = new TextArea();
+        this.terminal.setStyle("-fx-control-inner-background:#000000; -fx-font-family: Monaco; -fx-highlight-fill: #00ff00; -fx-highlight-text-fill: #000000; -fx-text-fill: #00ff00;");
+
+
+        VBox status = new VBox();
+        status.getChildren().addAll(new Label("Terminal"), terminal, new Label("done."));
+
+        terminal.setPrefHeight(100);
+        layout.setBottom(status);
 
         return layout;
 
@@ -89,8 +117,9 @@ public class App extends Application {
 
     private void compile(ActionEvent actionEvent) {
         try {
-            JavaCompiler.compile("/Users/pohjus/Desktop/Main.java");
-            JavaCompiler.run("/Users/pohjus/Desktop/Main");
+            String result = JavaCompiler.compile("/Users/pohjus/Desktop/Main.java");
+            this.terminal.setText(result);
+            this.terminal.setText(JavaCompiler.run("/Users/pohjus/Desktop/Main"));
 
         } catch (IOException e) {
             e.printStackTrace();
