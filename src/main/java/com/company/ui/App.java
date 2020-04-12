@@ -5,10 +5,19 @@ import com.company.util.JavaCompiler;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -18,9 +27,11 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.tools.Tool;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class App extends Application {
@@ -69,18 +80,41 @@ public class App extends Application {
                 }
             }
         });
-        layout.setTop(createMenuBar());
-        layout.setCenter(textArea);
+
+        ToolBar toolBar = new ToolBar();
+        Button button1 = new Button("+");
+        Button button2 = new Button("-");
+
+        Image img1 = new Image("run.png");
+        ImageView img = new ImageView(img1);
+        img.setFitHeight(12);
+        img.setFitWidth(12);
+
+        Button compile = new Button("", img);
+        compile.setTooltip(new Tooltip("Compile and run..."));
+        compile.setOnAction(this::compile);
+
+        toolBar.getItems().addAll(compile, new Separator(), button1, button2);
+
+        VBox up = new VBox();
+        up.getChildren().addAll(createMenuBar(), toolBar);
+
+
+        layout.setTop(up);
+
+        SplitPane splitPane = new SplitPane();
+        splitPane.setOrientation(Orientation.VERTICAL);
+
 
         this.terminal = new TextArea();
         this.terminal.setStyle("-fx-control-inner-background:#000000; -fx-font-family: Monaco; -fx-highlight-fill: #00ff00; -fx-highlight-text-fill: #000000; -fx-text-fill: #00ff00;");
 
+        BorderPane status = new BorderPane();
+        status.setTop(new Label("terminal"));
+        status.setCenter(terminal);
 
-        VBox status = new VBox();
-        status.getChildren().addAll(new Label("Terminal"), terminal, new Label("done."));
-
-        terminal.setPrefHeight(100);
-        layout.setBottom(status);
+        splitPane.getItems().addAll(textArea, status);
+        layout.setCenter(splitPane);
 
         return layout;
 
@@ -96,14 +130,16 @@ public class App extends Application {
         MenuItem save = new MenuItem(labels.getString("save"));
         save.setOnAction(this::saveFileChooser);
 
+        MenuItem exit = new MenuItem("Exit");
         menuFile.getItems().addAll(new MenuItem("New"),
                 open,
                 save,
                 new SeparatorMenuItem(),
-                new MenuItem("Exit"));
+                exit);
+
+        exit.setOnAction(e -> System.exit(0));
 
         Menu menuEdit = new Menu("Edit");
-        Menu menuView = new Menu("View");
         Menu menuRun = new Menu("Run");
 
         MenuItem compile = new MenuItem(labels.getString("compile"));
@@ -111,19 +147,15 @@ public class App extends Application {
 
         menuRun.getItems().add(compile);
 
-        menuBar.getMenus().addAll(menuFile, menuEdit, menuView, menuRun);
+        menuBar.getMenus().addAll(menuFile, menuEdit, menuRun);
         return menuBar;
     }
 
     private void compile(ActionEvent actionEvent) {
-        try {
-            String result = JavaCompiler.compile("/Users/pohjus/Desktop/Main.java");
-            this.terminal.setText(result);
-            this.terminal.setText(JavaCompiler.run("/Users/pohjus/Desktop/Main"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String path = stage.getTitle();
+        JavaCompiler.compileAndRun(path, (content, errormsg) -> {
+            this.terminal.setText(content);
+        });
     }
 
     private void openFileChooser(ActionEvent event) {
@@ -134,36 +166,36 @@ public class App extends Application {
             open(file);
         }
     }
+
     private void saveFileChooser(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Text File");
-        File file = fileChooser.showSaveDialog(this.stage);
-        if(file != null) {
-            save(file);
-        }
+        Optional<File> file = Optional.ofNullable(fileChooser.showSaveDialog(this.stage));
+        file.ifPresent((f) -> save(f));
     }
 
     private void open(File file) {
         FileHandler.open(file.getPath(), (content, errorMsg) -> {
-            if(errorMsg.isPresent()) {
-                displayErrorMsg(errorMsg.get());
-            } else {
+            errorMsg.ifPresentOrElse(msg -> displayErrorMsg(msg), () -> {
+                stage.setTitle(file.getAbsolutePath());
                 textArea.setText(content);
-            }
+            });
         });
     }
 
     private void save(File file) {
-        FileHandler.save(textArea.getText(), file.getPath(), (errorMsg) -> {
-            System.out.println("done!");
-        });
+        FileHandler.save(textArea.getText(), file.getPath(), System.out::println);
     }
 
-    private void displayErrorMsg(String s) {
-    }
 
     public static void main(String... args) {
         launch(args);
     }
 
+    private void displayErrorMsg(String msg) {
+        System.out.println(msg);
+    }
+
 }
+
+

@@ -1,41 +1,45 @@
 package com.company.util;
 
+import javafx.application.Platform;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Optional;
 
 public class JavaCompiler {
-    public static String compile(String file) throws IOException {
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("javac", file);
-        Process process = processBuilder.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuffer sb = new StringBuffer();
-        String str = "";
+    public static void compileAndRun(String file, Callback cb) {
 
-        while((str = reader.readLine())!= null){
-            sb.append(str);
-        }
-        System.out.println("result = " + sb.toString());
-        return sb.toString();
+        Thread t = new Thread(() -> {
+            try {
+                ProcessBuilder processBuilder = new ProcessBuilder();
+                processBuilder.command("java", file);
+                Process process = processBuilder.start();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                StringBuffer sb = new StringBuffer();
+                String str = "";
+                sb.append("> javac " + file + "\n");
+                while((str = reader.readLine()) != null){
+                    sb.append(str);
+                }
+
+                Platform.runLater(() -> {
+                    cb.received(sb.toString(), Optional.empty());
+                });
+            } catch(IOException e) {
+                Platform.runLater(() -> {
+                    cb.received("", Optional.of(e.getMessage()));
+                });
+            }
+
+        });
+        t.start();
+
 
     }
-    public static String run(String file) throws IOException {
-        // java -cp /Users/pohjus/Desktop Main
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("java", "-cp", "/Users/pohjus/Desktop", "Main");
-        Process process = processBuilder.start();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuffer sb = new StringBuffer();
-        String str = "";
-
-        while((str = reader.readLine())!= null){
-            sb.append(str);
-        }
-        System.out.println(sb.toString());
-        return sb.toString();
-
+    public interface Callback {
+        public void received(String content, Optional<String> errorMsg);
     }
 }
