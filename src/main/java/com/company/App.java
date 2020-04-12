@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -20,11 +21,15 @@ public class App extends Application {
 
     private TextArea textArea;
 
-    Locale locale = new Locale("fi", "FI");
+    private Locale locale = new Locale("fi", "FI");
     private ResourceBundle labels;
+
+    private Stage stage;
 
     @Override
     public void start(Stage stage) {
+        this.stage = stage;
+
         labels = ResourceBundle.getBundle("ui", locale);
 
         stage.setTitle(labels.getString("title"));
@@ -56,11 +61,14 @@ public class App extends Application {
         Menu menuFile = new Menu("File");
 
         MenuItem open = new MenuItem(labels.getString("open"));
-        open.setOnAction(this::open);
+        open.setOnAction(this::openFileChooser);
+
+        MenuItem save = new MenuItem(labels.getString("save"));
+        save.setOnAction(this::saveFileChooser);
 
         menuFile.getItems().addAll(new MenuItem("New"),
                 open,
-                new MenuItem("Save..."),
+                save,
                 new SeparatorMenuItem(),
                 new MenuItem("Exit"));
 
@@ -70,14 +78,40 @@ public class App extends Application {
         return menuBar;
     }
 
-    private void open(ActionEvent actionEvent) {
-        System.out.println(Thread.currentThread().getName());
-        FileHandler.open("/Users/pohjus/Desktop/temp.txt", (content) -> {
+    private void openFileChooser(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Text File");
+        File file = fileChooser.showOpenDialog(this.stage);
+        if(file != null) {
+            open(file);
+        }
+    }
+    private void saveFileChooser(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Text File");
+        File file = fileChooser.showSaveDialog(this.stage);
+        if(file != null) {
+            save(file);
+        }
+    }
 
-            System.out.println(Thread.currentThread().getName());
-
-            textArea.setText(content);
+    private void open(File file) {
+        FileHandler.open(file.getPath(), (content, errorMsg) -> {
+            if(errorMsg.isPresent()) {
+                displayErrorMsg(errorMsg.get());
+            } else {
+                textArea.setText(content);
+            }
         });
+    }
+
+    private void save(File file) {
+        FileHandler.save(textArea.getText(), file.getPath(), (errorMsg) -> {
+            System.out.println("done!");
+        });
+    }
+
+    private void displayErrorMsg(String s) {
     }
 
     public static void main(String... args) {
