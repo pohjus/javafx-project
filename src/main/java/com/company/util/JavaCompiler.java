@@ -24,19 +24,14 @@ public class JavaCompiler {
                     sb.append(str);
                 }
 
-                Platform.runLater(() -> {
-                    cb.received(sb.toString(), Optional.empty());
-                });
+                Platform.runLater(() -> cb.received(sb.toString(), Optional.empty()));
+
             } catch(IOException e) {
-                Platform.runLater(() -> {
-                    cb.received("", Optional.of(e.getMessage()));
-                });
+                Platform.runLater(() -> cb.received("", Optional.of(e.getMessage())));
             }
 
         });
         t.start();
-
-
     }
 
     public interface Callback {

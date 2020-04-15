@@ -27,6 +27,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -98,8 +99,16 @@ public class App extends Application {
 
 
         // Create color picker
-        ColorPicker colorPicker1 = new ColorPicker();
+        ColorPicker foregroundColor = new ColorPicker();
+        foregroundColor.setTooltip(new Tooltip("Text color"));
+        foregroundColor.setOnAction(e -> {
+            Color c = foregroundColor.getValue();
+            System.out.println(c.toString().split("0x"));
 
+            System.out.println("-fx-text-fill: RGB(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ");");
+
+            this.textArea.setStyle("-fx-text-fill: RGB(" + c.getRed() * 255 + "," + c.getGreen() * 255 + "," + c.getBlue() * 255 + ");");
+        });
         // Create font selection
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(
@@ -113,7 +122,14 @@ public class App extends Application {
         TextField sizeTextField = new TextField("12");
         sizeTextField.setMinWidth(50);
         sizeTextField.setPrefWidth(50);
-        toolBar.getItems().addAll(compile, new Separator(), comboBox, sizeTextField, colorPicker1, new Separator(), searchTextField, new Button("<"), new Button(">"));
+        toolBar.getItems().addAll(compile, new Separator(),
+                comboBox,
+                sizeTextField,
+                foregroundColor,
+                new Separator(),
+                searchTextField,
+                new Button("<"),
+                new Button(">"));
         return toolBar;
     }
 

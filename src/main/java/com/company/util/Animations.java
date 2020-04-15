@@ -10,7 +10,7 @@ import javafx.util.Duration;
 public class Animations {
     public static ParallelTransition addAnimationToButton(Button compile) {
         RotateTransition rotateTransition = new RotateTransition();
-        rotateTransition.setDuration(Duration.millis(200));
+        rotateTransition.setDuration(Duration.millis(400));
         rotateTransition.setByAngle(360);
         rotateTransition.setAutoReverse(true);
         rotateTransition.setCycleCount(2);
@@ -19,7 +19,7 @@ public class Animations {
 
 
         FadeTransition fadeTransition = new FadeTransition();
-        fadeTransition.setDuration(Duration.millis(200));
+        fadeTransition.setDuration(Duration.millis(400));
         fadeTransition.setFromValue(1.0);
         fadeTransition.setToValue(0.0);
         fadeTransition.setCycleCount(2);
@@ -27,7 +27,7 @@ public class Animations {
         fadeTransition.setNode(compile);
 
         ScaleTransition scaleTransition = new ScaleTransition();
-        scaleTransition.setDuration(Duration.millis(200));
+        scaleTransition.setDuration(Duration.millis(400));
         scaleTransition.setToX(2.0);
         scaleTransition.setToY(2.0);
         scaleTransition.setCycleCount(2);
