@@ -136,6 +136,15 @@ public class App extends Application {
         );
         comboBox.setValue("Monaco");
 
+        // Tabs vs spaces
+        RadioButton tab = new RadioButton("Tab");
+        RadioButton spaces = new RadioButton("Spaces (4)");
+        spaces.setSelected(true);
+        ToggleGroup group = new ToggleGroup();
+        spaces.setToggleGroup(group);
+        tab.setToggleGroup(group);
+
+
         // Create size font
         TextField sizeTextField = new TextField("" + prefsData.getFontSize());
         sizeTextField.setMinWidth(50);
@@ -144,6 +153,7 @@ public class App extends Application {
                 comboBox,
                 sizeTextField,
                 foregroundColor,
+                tab, spaces,
                 new Separator(),
                 searchTextField,
                 new Button("<"),
