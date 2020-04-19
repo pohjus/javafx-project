@@ -2,7 +2,7 @@ package com.company.preferences;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.awt.*;
+import javafx.scene.paint.Color;
 
 public class PrefsData {
     private String fontName;
@@ -10,6 +10,7 @@ public class PrefsData {
     private String fontColor;
     private boolean isTab;
     private int numberOfSpaces;
+
 
     public String getFontName() {
         return fontName;
@@ -36,8 +37,14 @@ public class PrefsData {
     }
 
     public String colorToString(Color fontColor) {
-        return "RGB(%s, %s, %s)".formatted(fontColor.getRed(), fontColor.getGreen(), fontColor.getBlue());
+        System.out.println(fontColor.getBlue() * 256);
+        System.out.println("here");
+
+        String color = "rgb(%s, %s, %s)".formatted((int) (fontColor.getRed() * 255), (int) (fontColor.getGreen() * 255), (int) (fontColor.getBlue() * 255));
+        System.out.println(color);
+        return color;
     }
+
 
     public boolean isTab() {
         return isTab;
@@ -57,7 +64,7 @@ public class PrefsData {
 
     @JsonIgnore
     public String getCSS() {
-        return "-fx-font-family: %s; -fx-font-size: %d px; -fx-font-color: %s"
-                .formatted(fontName, fontSize, fontColor);
+        return "-fx-text-fill: %s; -fx-font-family: %s; -fx-font-size: %d px;"
+                .formatted(fontColor, fontName, fontSize);
     }
 }

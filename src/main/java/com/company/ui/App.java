@@ -23,13 +23,13 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -37,11 +37,16 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import javax.tools.Tool;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.Key;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.scene.paint.Color;
 
 public class App extends Application {
 
@@ -118,23 +123,33 @@ public class App extends Application {
 
 
         // Create color picker
-        ColorPicker foregroundColor = new ColorPicker(Color.BLACK);
+
+        String color = this.prefsData.getFontColor();
+        Color prefColor = Color.web(color);
+
+        ColorPicker foregroundColor = new ColorPicker(prefColor);
 
         foregroundColor.setTooltip(new Tooltip("Text color"));
         foregroundColor.setOnAction(e -> {
             Color c = foregroundColor.getValue();
-            System.out.println(c.toString().split("0x"));
+            this.prefsData.setFontColor(this.prefsData.colorToString(c));
 
-            this.textArea.setStyle("-fx-text-fill: RGB(" + c.getRed() * 255 + "," + c.getGreen() * 255 + "," + c.getBlue() * 255 + ");");
+            this.textArea.setStyle(this.prefsData.getCSS());
         });
-        // Create font selection
-        ComboBox<String> comboBox = new ComboBox<>();
-        comboBox.getItems().addAll(
-                "Monaco",
-                "Inconsolita",
-                "Courier"
-        );
-        comboBox.setValue("Monaco");
+
+
+
+        var list = Font.getFontNames();
+
+        ComboBox<String> fontSelection = new ComboBox<>();
+        fontSelection.getItems().addAll(Font.getFontNames());
+
+        fontSelection.setValue(this.prefsData.getFontName());
+
+        fontSelection.setOnAction(actionEvent -> {
+            this.prefsData.setFontName(fontSelection.getValue());
+            this.textArea.setStyle(this.prefsData.getCSS());
+        });
 
         // Tabs vs spaces
         RadioButton tab = new RadioButton("Tab");
@@ -149,8 +164,25 @@ public class App extends Application {
         TextField sizeTextField = new TextField("" + prefsData.getFontSize());
         sizeTextField.setMinWidth(50);
         sizeTextField.setPrefWidth(50);
+        sizeTextField.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER) {
+                String fontSizeString = sizeTextField.getText();
+                try {
+                    int size = Integer.parseInt(fontSizeString);
+                    if(size > 10 && size <= 100) {
+                        prefsData.setFontSize(size);
+                        textArea.setStyle(prefsData.getCSS());
+                    } else {
+                        throw new NumberFormatException();
+                    }
+                } catch(NumberFormatException e) {
+                    displayErrorMsg("Please give valid number.");
+                }
+            }
+        });
+
         toolBar.getItems().addAll(compile, new Separator(),
-                comboBox,
+                fontSelection,
                 sizeTextField,
                 foregroundColor,
                 tab, spaces,
@@ -169,6 +201,7 @@ public class App extends Application {
         this.terminal.setStyle("-fx-control-inner-background:#000000; -fx-font-family: Monaco; " +
                 "-fx-highlight-fill: #00ff00; -fx-highlight-text-fill: #000000; " +
                 "-fx-text-fill: #00ff00;");
+        this.terminal.setEditable(false);
 
         BorderPane status = new BorderPane();
         status.setTop(new Label(labels.getString("terminal")));
@@ -180,7 +213,7 @@ public class App extends Application {
     private Parent initializeUI() {
         BorderPane layout = new BorderPane();
         textArea = new TextArea();
-
+        System.out.println(this.prefsData.getCSS());
         textArea.setStyle(this.prefsData.getCSS());
         textArea.setOnKeyPressed(this::replaceTabsWithSpaces);
 
@@ -225,9 +258,13 @@ public class App extends Application {
 
     private void compile(ActionEvent actionEvent) {
         String path = stage.getTitle();
-        JavaCompiler.compileAndRun(path, (content, errormsg) -> {
-            this.terminal.setText(content);
-        });
+        if(Files.exists(Paths.get(path))) {
+            JavaCompiler.compileAndRun(path, (content, errormsg) -> {
+                this.terminal.setText(content);
+            });
+        } else {
+            displayErrorMsg("Please save your file first.");
+        }
     }
 
     private void openFileChooser(ActionEvent event) {
@@ -256,7 +293,13 @@ public class App extends Application {
     }
 
     private void save(File file) {
-        FileHandler.save(textArea.getText(), file.getPath(), System.out::println);
+        FileHandler.save(textArea.getText(), file.getPath(), msg -> {
+            if(msg.isEmpty()) {
+                stage.setTitle(file.getAbsolutePath());
+            } else {
+                displayErrorMsg(msg.get());
+            }
+        });
     }
 
 
@@ -266,6 +309,10 @@ public class App extends Application {
 
     private void displayErrorMsg(String msg) {
         System.out.println(msg);
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Dialog");
+        alert.setHeaderText(msg);
+        alert.showAndWait();
     }
 
 }

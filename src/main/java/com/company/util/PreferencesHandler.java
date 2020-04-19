@@ -3,8 +3,8 @@ package com.company.util;
 
 import com.company.preferences.PrefsData;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.scene.paint.Color;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,8 +26,8 @@ public class PreferencesHandler {
             e.printStackTrace();
 
             preferencesData = new PrefsData();
-            preferencesData.setFontName("monaco");
-            preferencesData.setFontColor(preferencesData.colorToString(Color.BLACK));
+            preferencesData.setFontName("Monaco");
+            preferencesData.setFontColor(preferencesData.colorToString(Color.BLUE));
             preferencesData.setFontSize(12);
             preferencesData.setTab(false);
             preferencesData.setNumberOfSpaces(4);
