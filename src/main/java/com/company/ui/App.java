@@ -1,8 +1,10 @@
 package com.company.ui;
 
+import com.company.preferences.PrefsData;
 import com.company.util.Animations;
 import com.company.util.FileHandler;
 import com.company.util.JavaCompiler;
+import com.company.util.PreferencesHandler;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
@@ -45,11 +47,28 @@ public class App extends Application {
 
     private TextArea textArea;
 
-    private Locale locale = new Locale("fi", "FI");
+    private Locale locale = Locale.getDefault();
     private ResourceBundle labels;
 
     private Stage stage;
     private TextArea terminal;
+
+    private PreferencesHandler prefsHandler;
+    private PrefsData prefsData;
+
+    // Restore preferences
+    @Override
+    public void init() {
+        prefsHandler = new PreferencesHandler();
+        prefsHandler.restorePreferences();
+        prefsData = prefsHandler.getPreferencesData();
+    }
+
+    // Save preferences
+    @Override
+    public void stop() {
+        prefsHandler.savePreferences();
+    }
 
     @Override
     public void start(Stage stage) {
@@ -99,13 +118,12 @@ public class App extends Application {
 
 
         // Create color picker
-        ColorPicker foregroundColor = new ColorPicker();
+        ColorPicker foregroundColor = new ColorPicker(Color.BLACK);
+
         foregroundColor.setTooltip(new Tooltip("Text color"));
         foregroundColor.setOnAction(e -> {
             Color c = foregroundColor.getValue();
             System.out.println(c.toString().split("0x"));
-
-            System.out.println("-fx-text-fill: RGB(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ");");
 
             this.textArea.setStyle("-fx-text-fill: RGB(" + c.getRed() * 255 + "," + c.getGreen() * 255 + "," + c.getBlue() * 255 + ");");
         });
@@ -119,7 +137,7 @@ public class App extends Application {
         comboBox.setValue("Monaco");
 
         // Create size font
-        TextField sizeTextField = new TextField("12");
+        TextField sizeTextField = new TextField("" + prefsData.getFontSize());
         sizeTextField.setMinWidth(50);
         sizeTextField.setPrefWidth(50);
         toolBar.getItems().addAll(compile, new Separator(),
@@ -153,8 +171,7 @@ public class App extends Application {
         BorderPane layout = new BorderPane();
         textArea = new TextArea();
 
-        // TODO fix font
-        textArea.setFont(Font.font("Monaco", FontWeight.NORMAL, 14));
+        textArea.setStyle(this.prefsData.getCSS());
         textArea.setOnKeyPressed(this::replaceTabsWithSpaces);
 
         layout.setTop(new VBox(createMenuBar(), createToolBar()));

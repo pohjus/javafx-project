@@ -19,7 +19,7 @@ public class JavaCompiler {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 StringBuffer sb = new StringBuffer();
                 String str = "";
-                sb.append("> javac " + file + "\n");
+                sb.append("> java " + file + "\n");
                 while((str = reader.readLine()) != null){
                     sb.append(str);
                 }
