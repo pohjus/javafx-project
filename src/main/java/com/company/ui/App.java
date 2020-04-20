@@ -83,7 +83,7 @@ public class App extends Application {
 
         Parent layout = initializeUI();
 
-        Scene content = new Scene(layout, 640, 480);
+        Scene content = new Scene(layout, 1000, 480);
         content.getStylesheets().add("style.css");
 
         stage.setScene(content);
@@ -95,7 +95,12 @@ public class App extends Application {
      */
     private void replaceTabsWithSpaces(KeyEvent keyEvent) {
         if(keyEvent.getCode() == KeyCode.TAB) {
+            // tabulaattorimerkki (\t) on nyt tekstialueessa.
+
+            // haetaan kursorin sijainti
             int index = textArea.getCaretPosition();
+
+            // Korvataan yksi merkki, juuri tehty tabulaattori...
             textArea.replaceText(index-1, index, "____");
         }
     }
@@ -151,13 +156,18 @@ public class App extends Application {
         });
 
         // Tabs vs spaces
-        RadioButton tab = new RadioButton("Tab");
-        RadioButton spaces = new RadioButton("Spaces (4)");
-        spaces.setSelected(true);
+        RadioButton tab = new RadioButton(labels.getString("tab"));
+        RadioButton spaces = new RadioButton(labels.getString("spaces"));
+        tab.setSelected(this.prefsData.isTab());
+        spaces.setSelected(!this.prefsData.isTab());
+
         ToggleGroup group = new ToggleGroup();
         spaces.setToggleGroup(group);
         tab.setToggleGroup(group);
 
+
+        tab.setOnAction(this::toggleTabsVsSpaces);
+        spaces.setOnAction(this::toggleTabsVsSpaces);
 
         // Create size font
         TextField sizeTextField = new TextField("" + prefsData.getFontSize());
@@ -191,6 +201,19 @@ public class App extends Application {
                 new Button(">"));
         return toolBar;
     }
+
+    private void toggleTabsVsSpaces(ActionEvent actionEvent) {
+        RadioButton input = (RadioButton) actionEvent.getSource();
+        if (input.getText().equals(labels.getString("tab"))) {
+            this.prefsData.setTab(true);
+        } else {
+            this.prefsData.setTab(false);
+        }
+
+        System.out.println(this.prefsData);
+
+    }
+
 
     private Parent createSplitPane() {
         SplitPane splitPane = new SplitPane();
@@ -277,33 +300,31 @@ public class App extends Application {
 
         Menu menuAbout = new Menu(labels.getString("about"));
         MenuItem menuAboutApp = new MenuItem(labels.getString("aboutApp"));
+        menuAboutApp.setOnAction(this::about);
         menuAbout.getItems().add(menuAboutApp);
 
         menuBar.getMenus().addAll(menuFile, menuEdit, menuRun, menuAbout);
         return menuBar;
     }
 
+    private void about(ActionEvent e) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(labels.getString("title"));
+        alert.setHeaderText(labels.getString("title"));
+        alert.setContentText(labels.getString("coder"));
+
+        alert.showAndWait();
+    }
     private void copy(ActionEvent e) {
-        final Clipboard clipboard = Clipboard.getSystemClipboard();
-        final ClipboardContent content = new ClipboardContent();
-        content.putString(textArea.getSelectedText());
-        clipboard.setContent(content);
+        textArea.copy();
     }
 
     private void cut(ActionEvent e) {
-        final Clipboard clipboard = Clipboard.getSystemClipboard();
-        final ClipboardContent content = new ClipboardContent();
-        content.putString(textArea.getSelectedText());
-        textArea.deleteText(textArea.getSelection());
-
-        clipboard.setContent(content);
+        textArea.cut();
     }
 
     private void paste(ActionEvent e) {
-        final Clipboard clipboard = Clipboard.getSystemClipboard();
-
-        int index = textArea.getCaretPosition();
-        textArea.insertText(index, clipboard.getString());
+        textArea.paste();
     }
 
     private void compile(ActionEvent actionEvent) {

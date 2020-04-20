@@ -45,6 +45,16 @@ public class PrefsData {
         return color;
     }
 
+    @Override
+    public String toString() {
+        return "PrefsData{" +
+                "fontName='" + fontName + '\'' +
+                ", fontSize=" + fontSize +
+                ", fontColor='" + fontColor + '\'' +
+                ", isTab=" + isTab +
+                ", numberOfSpaces=" + numberOfSpaces +
+                '}';
+    }
 
     public boolean isTab() {
         return isTab;
