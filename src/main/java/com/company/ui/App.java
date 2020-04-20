@@ -8,6 +8,7 @@ import com.company.preferences.PreferencesHandler;
 import javafx.animation.ParallelTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -40,6 +41,8 @@ import javafx.scene.paint.Color;
 public class App extends Application {
 
     private TextArea textArea;
+
+    private TextField searchTextField;
 
     private Locale locale = Locale.getDefault();
     private ResourceBundle labels;
@@ -95,10 +98,21 @@ public class App extends Application {
         }
     }
 
+    private void search(String text) {
+        int index = this.textArea.getText().indexOf(text);
+        textArea.selectRange(index, index + text.length());
+
+    }
     private Parent createToolBar() {
         ToolBar toolBar = new ToolBar();
-        TextField searchTextField = new TextField();
+        searchTextField = new TextField();
         searchTextField.setPromptText(labels.getString("search"));
+
+        searchTextField.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER) {
+                search(searchTextField.getText());
+            }
+        });
 
         // Create compile button for toolbar with icon
         Image img1 = new Image("run.png");
@@ -180,6 +194,11 @@ public class App extends Application {
             }
         });
 
+        Button next = new Button(labels.getString("next"));
+        Button prev = new Button(labels.getString("prev"));
+
+        next.setOnAction(this::next);
+        prev.setOnAction(this::prev);
         toolBar.getItems().addAll(compile, new Separator(),
                 fontSelection,
                 sizeTextField,
@@ -187,9 +206,27 @@ public class App extends Application {
                 tab, spaces,
                 new Separator(),
                 searchTextField,
-                new Button("<"),
-                new Button(">"));
+                prev,
+                next);
         return toolBar;
+    }
+
+    private void next(ActionEvent e) {
+        IndexRange selection = textArea.getSelection();
+        int start = selection.getEnd();
+
+
+        int index = this.textArea.getText().indexOf(searchTextField.getText(), start);
+        if(index != -1) {
+            textArea.selectRange(index, index + searchTextField.getText().length());
+        } else {
+            // TODO
+            displayErrorMsg("Last occurance of the word");
+        }
+    }
+
+    private void prev(ActionEvent e) {
+
     }
 
     private void toggleTabsVsSpaces(ActionEvent actionEvent) {
@@ -199,8 +236,6 @@ public class App extends Application {
         } else {
             this.prefsData.setTab(false);
         }
-
-        System.out.println(this.prefsData);
 
     }
 
