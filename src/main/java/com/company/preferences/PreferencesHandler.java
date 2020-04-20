@@ -1,4 +1,4 @@
-package com.company.util;
+package com.company.preferences;
 
 
 import com.company.preferences.PrefsData;

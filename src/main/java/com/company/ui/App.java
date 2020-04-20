@@ -4,14 +4,10 @@ import com.company.preferences.PrefsData;
 import com.company.util.Animations;
 import com.company.util.FileHandler;
 import com.company.util.JavaCompiler;
-import com.company.util.PreferencesHandler;
-import javafx.animation.FadeTransition;
+import com.company.preferences.PreferencesHandler;
 import javafx.animation.ParallelTransition;
-import javafx.animation.RotateTransition;
-import javafx.animation.ScaleTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -30,18 +26,12 @@ import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
-import javax.tools.Tool;
-import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.Key;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -94,7 +84,7 @@ public class App extends Application {
      * Replaces tabs with four spaces in the textarea
      */
     private void replaceTabsWithSpaces(KeyEvent keyEvent) {
-        if(keyEvent.getCode() == KeyCode.TAB) {
+        if(keyEvent.getCode() == KeyCode.TAB && !this.prefsData.isTab()) {
             // tabulaattorimerkki (\t) on nyt tekstialueessa.
 
             // haetaan kursorin sijainti
