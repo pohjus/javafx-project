@@ -257,10 +257,16 @@ public class App extends Application {
         MenuItem paste = new MenuItem(labels.getString("paste"));
         paste.setAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.SHORTCUT_DOWN));
 
+        MenuItem cut = new MenuItem(labels.getString("cut"));
+        cut.setAccelerator(new KeyCodeCombination(KeyCode.X, KeyCombination.SHORTCUT_DOWN));
+
+
+        cut.setOnAction(this::cut);
+
         copy.setOnAction(this::copy);
         paste.setOnAction(this::paste);
 
-        menuEdit.getItems().addAll(copy, paste);
+        menuEdit.getItems().addAll(cut, copy, paste);
 
         Menu menuRun = new Menu(labels.getString("run"));
 
@@ -269,15 +275,27 @@ public class App extends Application {
 
         menuRun.getItems().add(compile);
 
-        menuBar.getMenus().addAll(menuFile, menuEdit, menuRun);
+        Menu menuAbout = new Menu(labels.getString("about"));
+        MenuItem menuAboutApp = new MenuItem(labels.getString("aboutApp"));
+        menuAbout.getItems().add(menuAboutApp);
+
+        menuBar.getMenus().addAll(menuFile, menuEdit, menuRun, menuAbout);
         return menuBar;
     }
 
     private void copy(ActionEvent e) {
-        System.out.println("copy");
         final Clipboard clipboard = Clipboard.getSystemClipboard();
         final ClipboardContent content = new ClipboardContent();
         content.putString(textArea.getSelectedText());
+        clipboard.setContent(content);
+    }
+
+    private void cut(ActionEvent e) {
+        final Clipboard clipboard = Clipboard.getSystemClipboard();
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(textArea.getSelectedText());
+        textArea.deleteText(textArea.getSelection());
+
         clipboard.setContent(content);
     }
 

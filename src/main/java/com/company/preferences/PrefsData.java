@@ -64,7 +64,7 @@ public class PrefsData {
 
     @JsonIgnore
     public String getCSS() {
-        return "-fx-text-fill: %s; -fx-font-family: %s; -fx-font-size: %d px;"
+        return "-fx-text-fill: %s; -fx-font-family: \"%s\"; -fx-font-size: %d px;"
                 .formatted(fontColor, fontName, fontSize);
     }
 }
