@@ -26,8 +26,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -230,12 +229,18 @@ public class App extends Application {
 
         MenuItem open = new MenuItem(labels.getString("open"));
         open.setOnAction(this::openFileChooser);
+        open.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.SHORTCUT_DOWN));
 
         MenuItem save = new MenuItem(labels.getString("save"));
         save.setOnAction(this::saveFileChooser);
+        save.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
+
+        MenuItem newMenuItem = new MenuItem(labels.getString("new"));
+        newMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN));
+
 
         MenuItem exit = new MenuItem(labels.getString("exit"));
-        menuFile.getItems().addAll(new MenuItem(labels.getString("new")),
+        menuFile.getItems().addAll(newMenuItem,
                 open,
                 save,
                 new MenuItem(labels.getString("settings")),
@@ -245,6 +250,18 @@ public class App extends Application {
         exit.setOnAction(e -> System.exit(0));
 
         Menu menuEdit = new Menu(labels.getString("edit"));
+
+        MenuItem copy = new MenuItem(labels.getString("copy"));
+        copy.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.SHORTCUT_DOWN));
+
+        MenuItem paste = new MenuItem(labels.getString("paste"));
+        paste.setAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.SHORTCUT_DOWN));
+
+        copy.setOnAction(this::copy);
+        paste.setOnAction(this::paste);
+
+        menuEdit.getItems().addAll(copy, paste);
+
         Menu menuRun = new Menu(labels.getString("run"));
 
         MenuItem compile = new MenuItem(labels.getString("compile"));
@@ -254,6 +271,21 @@ public class App extends Application {
 
         menuBar.getMenus().addAll(menuFile, menuEdit, menuRun);
         return menuBar;
+    }
+
+    private void copy(ActionEvent e) {
+        System.out.println("copy");
+        final Clipboard clipboard = Clipboard.getSystemClipboard();
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(textArea.getSelectedText());
+        clipboard.setContent(content);
+    }
+
+    private void paste(ActionEvent e) {
+        final Clipboard clipboard = Clipboard.getSystemClipboard();
+
+        int index = textArea.getCaretPosition();
+        textArea.insertText(index, clipboard.getString());
     }
 
     private void compile(ActionEvent actionEvent) {
