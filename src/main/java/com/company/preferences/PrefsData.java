@@ -37,11 +37,10 @@ public class PrefsData {
     }
 
     public String colorToString(Color fontColor) {
-        System.out.println(fontColor.getBlue() * 256);
-        System.out.println("here");
-
-        String color = "rgb(%s, %s, %s)".formatted((int) (fontColor.getRed() * 255), (int) (fontColor.getGreen() * 255), (int) (fontColor.getBlue() * 255));
-        System.out.println(color);
+        String color = "rgb(%s, %s, %s)"
+                            .formatted((int) (fontColor.getRed() * 255),
+                                       (int) (fontColor.getGreen() * 255),
+                                       (int) (fontColor.getBlue() * 255));
         return color;
     }
 

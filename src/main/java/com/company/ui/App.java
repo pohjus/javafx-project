@@ -40,6 +40,9 @@ import javafx.scene.paint.Color;
 
 public class App extends Application {
 
+
+    private FileHandler fileHandler;
+
     private TextArea textArea;
 
     private TextField searchTextField;
@@ -52,6 +55,8 @@ public class App extends Application {
 
     private PreferencesHandler prefsHandler;
     private PrefsData prefsData;
+
+    private MenuItem save;
 
     // Restore preferences
     @Override
@@ -69,6 +74,8 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
+        this.fileHandler = new FileHandler();
+
         this.stage = stage;
 
         labels = ResourceBundle.getBundle("ui", locale);
@@ -101,8 +108,8 @@ public class App extends Application {
     private void search(String text) {
         int index = this.textArea.getText().indexOf(text);
         textArea.selectRange(index, index + text.length());
-
     }
+
     private Parent createToolBar() {
         ToolBar toolBar = new ToolBar();
         searchTextField = new TextField();
@@ -215,7 +222,6 @@ public class App extends Application {
         IndexRange selection = textArea.getSelection();
         int start = selection.getEnd();
 
-
         int index = this.textArea.getText().indexOf(searchTextField.getText(), start);
         if(index != -1) {
             textArea.selectRange(index, index + searchTextField.getText().length());
@@ -226,6 +232,17 @@ public class App extends Application {
     }
 
     private void prev(ActionEvent e) {
+        IndexRange selection = textArea.getSelection();
+        int start = selection.getStart() - 1;
+
+        int index = this.textArea.getText().lastIndexOf(searchTextField.getText(), start);
+        if(index != -1) {
+            textArea.selectRange(index, index + searchTextField.getText().length());
+        } else {
+            displayErrorMsg("Nothing to search for.");
+        }
+
+
 
     }
 
@@ -279,9 +296,17 @@ public class App extends Application {
         open.setOnAction(this::openFileChooser);
         open.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.SHORTCUT_DOWN));
 
-        MenuItem save = new MenuItem(labels.getString("save"));
-        save.setOnAction(this::saveFileChooser);
+        MenuItem saveAs = new MenuItem(labels.getString("saveas"));
+        saveAs.setOnAction(this::saveFileChooser);
+        saveAs.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN));
+
+        save = new MenuItem(labels.getString("save"));
+        save.setOnAction(e -> this.save(new File(this.fileHandler.getFilePath())));
         save.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
+
+        if(!this.fileHandler.getIsFileOpen()) {
+            save.setDisable(true);
+        }
 
         MenuItem newMenuItem = new MenuItem(labels.getString("new"));
         newMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN));
@@ -290,7 +315,9 @@ public class App extends Application {
         MenuItem exit = new MenuItem(labels.getString("exit"));
         menuFile.getItems().addAll(newMenuItem,
                 open,
+                saveAs,
                 save,
+                new SeparatorMenuItem(),
                 new MenuItem(labels.getString("settings")),
                 new SeparatorMenuItem(),
                 exit);
@@ -374,24 +401,27 @@ public class App extends Application {
 
     private void saveFileChooser(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Text File");
         Optional<File> file = Optional.ofNullable(fileChooser.showSaveDialog(this.stage));
         file.ifPresent((f) -> save(f));
     }
 
     private void open(File file) {
-        FileHandler.open(file.getPath(), (content, errorMsg) -> {
+        this.fileHandler.setFilePath(file.getAbsolutePath());
+        this.fileHandler.open((content, errorMsg) -> {
             errorMsg.ifPresentOrElse(msg -> displayErrorMsg(msg), () -> {
-                stage.setTitle(file.getAbsolutePath());
+                stage.setTitle(this.fileHandler.getFilePath());
                 textArea.setText(content);
             });
         });
     }
 
     private void save(File file) {
-        FileHandler.save(textArea.getText(), file.getPath(), msg -> {
+        this.fileHandler.setFilePath(file.getAbsolutePath());
+
+        this.fileHandler.save(textArea.getText(), msg -> {
             if(msg.isEmpty()) {
-                stage.setTitle(file.getAbsolutePath());
+                stage.setTitle(this.fileHandler.getFilePath());
+                this.save.setDisable(false);
             } else {
                 displayErrorMsg(msg.get());
             }
