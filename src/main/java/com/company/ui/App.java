@@ -1,5 +1,6 @@
 package com.company.ui;
 
+import com.company.preferences.MyState;
 import com.company.preferences.PrefsData;
 import com.company.util.Animations;
 import com.company.util.FileHandler;
@@ -21,6 +22,9 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.Light;
+import javafx.scene.effect.Lighting;
+import javafx.scene.effect.Reflection;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
@@ -61,6 +65,7 @@ public class App extends Application {
     // Restore preferences
     @Override
     public void init() {
+
         prefsHandler = new PreferencesHandler();
         prefsHandler.restorePreferences();
         prefsData = prefsHandler.getPreferencesData();
@@ -74,7 +79,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        this.fileHandler = new FileHandler();
+        this.fileHandler = FileHandler.getInstance();
 
         this.stage = stage;
 
@@ -127,6 +132,12 @@ public class App extends Application {
         img.setFitHeight(12);
         img.setFitWidth(12);
         Button compile = new Button("", img);
+        Light.Distant light = new Light.Distant();
+        light.setAzimuth(-135.0f);
+        Lighting l = new Lighting();
+        l.setLight(light);
+        l.setSurfaceScale(5.0f);
+        compile.setEffect(l);
 
         compile.setTooltip(new Tooltip(labels.getString("compile")));
         compile.setOnAction((e) -> {
@@ -267,6 +278,8 @@ public class App extends Application {
                 "-fx-text-fill: #00ff00;");
         this.terminal.setEditable(false);
 
+
+
         BorderPane status = new BorderPane();
         status.setTop(new Label(labels.getString("terminal")));
         status.setCenter(terminal);
@@ -379,11 +392,29 @@ public class App extends Application {
         textArea.paste();
     }
 
+    private void runJava() {
+        String filePath = FileHandler.getInstance().getFilePath();
+        JavaCompiler compiler = JavaCompiler.getInstance();
+        compiler.setFile(filePath);
+        compiler.run(((content, errorMsg) -> {
+            // TODO errormsg
+            terminal.setText(content);
+        }));
+    }
     private void compile(ActionEvent actionEvent) {
-        String path = stage.getTitle();
-        if(Files.exists(Paths.get(path))) {
-            JavaCompiler.compileAndRun(path, (content, errormsg) -> {
-                this.terminal.setText(content);
+        String filePath = FileHandler.getInstance().getFilePath();
+
+        // If file exists
+        if(Files.exists(Paths.get(filePath))) {
+            JavaCompiler compiler = JavaCompiler.getInstance();
+            compiler.setFile(filePath);
+            compiler.compile((content, errorMsg) -> {
+                // If javac compiler errors
+                if(!content.equals("")) {
+                    terminal.setText(content);
+                } else {
+                    runJava();
+                }
             });
         } else {
             displayErrorMsg("Please save your file first.");
@@ -411,6 +442,7 @@ public class App extends Application {
             errorMsg.ifPresentOrElse(msg -> displayErrorMsg(msg), () -> {
                 stage.setTitle(this.fileHandler.getFilePath());
                 textArea.setText(content);
+                save.setDisable(false);
             });
         });
     }
@@ -421,6 +453,7 @@ public class App extends Application {
         this.fileHandler.save(textArea.getText(), msg -> {
             if(msg.isEmpty()) {
                 stage.setTitle(this.fileHandler.getFilePath());
+
                 this.save.setDisable(false);
             } else {
                 displayErrorMsg(msg.get());

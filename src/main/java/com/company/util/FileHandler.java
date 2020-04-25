@@ -25,6 +25,19 @@ public class FileHandler {
         this.filePath = filePath;
     }
 
+    private static FileHandler fh;
+
+    private FileHandler() {
+
+    }
+
+    public static FileHandler getInstance() {
+        if (fh == null) {
+            fh = new FileHandler();
+        }
+        return fh;
+    }
+
     public void close() {
         filePath = null;
         isFileOpen = false;
