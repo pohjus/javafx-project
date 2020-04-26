@@ -4,11 +4,12 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.util.Duration;
 
 public class Animations {
-    public static ParallelTransition addAnimationToButton(Button compile) {
+    public static ParallelTransition addAnimationToButton(Node compile) {
         RotateTransition rotateTransition = new RotateTransition();
         rotateTransition.setDuration(Duration.millis(400));
         rotateTransition.setByAngle(360);

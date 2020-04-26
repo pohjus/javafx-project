@@ -7,6 +7,7 @@ import com.company.util.FileHandler;
 import com.company.util.JavaCompiler;
 import com.company.preferences.PreferencesHandler;
 import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -41,6 +42,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 public class App extends Application {
 
@@ -399,6 +401,8 @@ public class App extends Application {
         compiler.run(((content, errorMsg) -> {
             // TODO errormsg
             terminal.setText(content);
+
+
         }));
     }
     private void compile(ActionEvent actionEvent) {
@@ -409,6 +413,7 @@ public class App extends Application {
             JavaCompiler compiler = JavaCompiler.getInstance();
             compiler.setFile(filePath);
             compiler.compile((content, errorMsg) -> {
+                System.out.println(content);
                 // If javac compiler errors
                 if(!content.equals("")) {
                     terminal.setText(content);

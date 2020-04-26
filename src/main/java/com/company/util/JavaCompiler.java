@@ -43,19 +43,28 @@ public class JavaCompiler {
                 String name = p.getFileName().toString();
                 String path = p.getParent().toString();
 
-                String [] compile = {"javac", file};
+                System.out.println(name);
+                System.out.println(path);
+
+                String [] compile = {"javac", path + "/" + name};
 
                 // Compile
                 var compileProcess = Runtime.getRuntime().exec(compile);
-                if( compileProcess.getErrorStream().read() != -1 ){
+                if( compileProcess.getErrorStream().read() != -1 ) {
+                    System.out.println("error");
+                    new SoundPlayer().playSound("error.wav");
                     output = getOutput(compileProcess.getErrorStream());
+                    System.out.println(output);
                 }
 
                 compileProcess.waitFor();
 
+                System.out.println("output = " + output);
+
                 final String finalOutput = output;
                 Platform.runLater(() -> cb.received(finalOutput, Optional.empty()));
             } catch(Exception e) {
+                e.printStackTrace();
                 Platform.runLater(() -> cb.received("", Optional.of(e.toString())));
             }
         });
@@ -80,6 +89,8 @@ public class JavaCompiler {
                 if( runProcess.getErrorStream().read() != -1 ){
                     output = getOutput(runProcess.getErrorStream());
                 } else {
+                    new SoundPlayer().playSound("success.wav");
+
                     output = getOutput(runProcess.getInputStream());
                 }
 
