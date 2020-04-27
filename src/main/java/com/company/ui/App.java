@@ -174,16 +174,18 @@ public class App extends Application {
 
 
 
-        var list = Font.getFontNames();
+        var list = Font.getFamilies();
 
         ComboBox<String> fontSelection = new ComboBox<>();
-        fontSelection.getItems().addAll(Font.getFontNames());
+        fontSelection.getItems().addAll(list);
 
         fontSelection.setValue(this.prefsData.getFontName());
 
         fontSelection.setOnAction(actionEvent -> {
             this.prefsData.setFontName(fontSelection.getValue());
             this.textArea.setStyle(this.prefsData.getCSS());
+            System.out.println(this.prefsData.getCSS());
+
         });
 
         // Tabs vs spaces
@@ -297,7 +299,6 @@ public class App extends Application {
     }
 
     private Parent initializeUI() {
-        TabPane tabPane = new TabPane();
 
 
         BorderPane layout = new BorderPane();
@@ -309,13 +310,13 @@ public class App extends Application {
         layout.setTop(new VBox(createMenuBar(), createToolBar()));
         layout.setCenter(createSplitPane());
 
-        Tab tab1 = new Tab("Editor", layout);
-        Tab tab2 = new Tab("Diagram", new Label("diagram"));
 
-        tabPane.getTabs().addAll(tab1, tab2);
+        return layout;
 
-        return tabPane;
+    }
 
+    private void displayTimeStamps(ActionEvent e) {
+        TimeStampDialog.generateDialog().showAndWait();
     }
 
     private Node createMenuBar() {
@@ -343,11 +344,17 @@ public class App extends Application {
 
 
         MenuItem exit = new MenuItem(labels.getString("exit"));
+
+        MenuItem timeStamps = new MenuItem(labels.getString("timestamps"));
+
+        timeStamps.setOnAction(this::displayTimeStamps);
+
         menuFile.getItems().addAll(newMenuItem,
                 open,
                 saveAs,
                 save,
                 new SeparatorMenuItem(),
+                timeStamps,
                 new MenuItem(labels.getString("settings")),
                 new SeparatorMenuItem(),
                 exit);

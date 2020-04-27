@@ -13,7 +13,6 @@ import java.util.*;
 
 public class TimeHandler {
 
-
     List<Time> stamps;
 
     private long start;
@@ -62,7 +61,6 @@ public class TimeHandler {
         ObjectMapper om = new ObjectMapper();
 
         try {
-            System.out.println("STAMPS");
             om.writeValue(
                     new FileOutputStream("./data.json"), this.stamps);
         } catch (Exception e) {
@@ -72,7 +70,7 @@ public class TimeHandler {
 
     public void restoreTimeStamp() {
         ObjectMapper om = new ObjectMapper();
-        Time[] times = new Time[0];
+        Time[] times = null;
         try {
             times = om.readValue(new FileInputStream("./data.json"), Time[].class);
         } catch (IOException e) {
