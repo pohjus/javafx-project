@@ -2,6 +2,7 @@ package com.company.ui;
 
 import com.company.preferences.MyState;
 import com.company.preferences.PrefsData;
+import com.company.timestamp.TimeHandler;
 import com.company.util.Animations;
 import com.company.util.FileHandler;
 import com.company.util.JavaCompiler;
@@ -71,12 +72,18 @@ public class App extends Application {
         prefsHandler = new PreferencesHandler();
         prefsHandler.restorePreferences();
         prefsData = prefsHandler.getPreferencesData();
+
+        TimeHandler.getInstance().restoreTimeStamp();
+        TimeHandler.getInstance().setStart(System.currentTimeMillis());
     }
 
     // Save preferences
     @Override
     public void stop() {
         prefsHandler.savePreferences();
+        TimeHandler.getInstance().setEnd(System.currentTimeMillis());
+        System.out.println("hep");
+        TimeHandler.getInstance().saveTimeStamp();
     }
 
     @Override
@@ -290,6 +297,9 @@ public class App extends Application {
     }
 
     private Parent initializeUI() {
+        TabPane tabPane = new TabPane();
+
+
         BorderPane layout = new BorderPane();
         textArea = new TextArea();
         System.out.println(this.prefsData.getCSS());
@@ -299,7 +309,12 @@ public class App extends Application {
         layout.setTop(new VBox(createMenuBar(), createToolBar()));
         layout.setCenter(createSplitPane());
 
-        return layout;
+        Tab tab1 = new Tab("Editor", layout);
+        Tab tab2 = new Tab("Diagram", new Label("diagram"));
+
+        tabPane.getTabs().addAll(tab1, tab2);
+
+        return tabPane;
 
     }
 
@@ -337,7 +352,10 @@ public class App extends Application {
                 new SeparatorMenuItem(),
                 exit);
 
-        exit.setOnAction(e -> System.exit(0));
+        exit.setOnAction(e -> {
+            this.stop();
+            System.exit(0);
+        });
 
         Menu menuEdit = new Menu(labels.getString("edit"));
 
@@ -401,8 +419,6 @@ public class App extends Application {
         compiler.run(((content, errorMsg) -> {
             // TODO errormsg
             terminal.setText(content);
-
-
         }));
     }
     private void compile(ActionEvent actionEvent) {
