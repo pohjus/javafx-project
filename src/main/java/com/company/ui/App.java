@@ -119,9 +119,12 @@ public class App extends Application {
         }
     }
 
-    private void search(String text) {
-        int index = this.textArea.getText().indexOf(text);
-        textArea.selectRange(index, index + text.length());
+    private void search(String searchText) {
+        // Haetaan indeksi mistä kohtaa tekstiareasta löytyy haettava teksti
+        int index = this.textArea.getText().indexOf(searchText);
+
+        // Tehdään select valinta alkaen indeksistä hakusanan pituuden verran
+        textArea.selectRange(index, index + searchText.length());
     }
 
     private Parent createToolBar() {
@@ -177,6 +180,16 @@ public class App extends Application {
         var list = Font.getFamilies();
 
         ComboBox<String> fontSelection = new ComboBox<>();
+        fontSelection.setOnKeyPressed(e -> {
+            String pressed = e.getCharacter();
+
+            Optional<String> item = list.stream().filter(i -> i.startsWith(pressed)).findFirst();
+
+            item.ifPresent(i -> {
+                fontSelection.getSelectionModel().select(i);
+            });
+
+        });
         fontSelection.getItems().addAll(list);
 
         fontSelection.setValue(this.prefsData.getFontName());
@@ -315,6 +328,14 @@ public class App extends Application {
 
     }
 
+
+    private boolean exit() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Want to exit?");
+        alert.setHeaderText("Want to exit?");
+        alert.setContentText("Have you saved your file? If not everything is lost!");
+        return alert.showAndWait().get() == ButtonType.OK;
+    }
     private void displayTimeStamps(ActionEvent e) {
         TimeStampDialog.generateDialog().showAndWait();
     }
@@ -360,8 +381,11 @@ public class App extends Application {
                 exit);
 
         exit.setOnAction(e -> {
-            this.stop();
-            System.exit(0);
+
+            if(exit()) {
+                this.stop();
+                System.exit(0);
+            }
         });
 
         Menu menuEdit = new Menu(labels.getString("edit"));
